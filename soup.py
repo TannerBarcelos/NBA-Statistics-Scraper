@@ -3,8 +3,6 @@ import requests
 
 class Soup:
     
-    # default baseURL is the root page we are pulling data from [can accept
-    # any url if passed in when instantiating a new instance of this class]
     def __init__(self, baseURL = 'https://www.basketball-reference.com/teams/'):
         self.url = baseURL
 

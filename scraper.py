@@ -1,24 +1,17 @@
 from soup import Soup
 
 # Gets the team names and links to those teams
-def get_base_links():
-
-    # store the team name and link as key-val pairs
+def get_base_links() -> {}:
     teamMap = {}
-
-    # root beautifulsoup object
+    
     soup = Soup()
-
-    # pull out the table of teams
+    
+    # Perform the request to the base page and find the table of team names + links and pull that out
     table = soup.getData().find('table', id='teams_active')
-
-    # get the tables body [the <tr>'s, and their data]
     tableBody = table.find('tbody')
-
-    # get just the table rows of the team links
     tableRowData = tableBody.find_all('tr', class_='full_table')
 
-    # get the link to each team long-term data
+    # get the link to each team page
     for el in tableRowData:
         element = el.find('a')
         link = f'{soup.getURL()[:len(element) - 8]}{element["href"]}'
@@ -27,15 +20,19 @@ def get_base_links():
 
     return teamMap
 
-# gets the specific HTML page for every team on basketball-reference with a n-season summary
-def getTeamPageSummary(teamsMap):
+# gets the specific HTML page for every team on basketball-reference with an n-season summary
+def get_team_page(teamsMap) -> []:
     pagesForTeams = []
     for name, link in teamsMap.items():
-        print(f'{name} : {link}')
-        base = Soup(link).getData()
-        pagesForTeams.append(base)
+        pagesForTeams.append(Soup(link).getData())
     return pagesForTeams
 
-teamMap = get_base_links()
+# main method
+def main() -> None:
+    teams = get_base_links()
+    teamPages = get_team_page(teams)
 
-getTeamPageSummary(teamMap)
+    for teamPage in teamPages:
+        print(teamPage)
+
+main()
