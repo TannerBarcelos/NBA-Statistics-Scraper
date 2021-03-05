@@ -1,20 +1,24 @@
-from soup import Soup
+from soup import CreateSoup
 
 # Gets the team names and links to those teams
 def get_base_links() -> {}:
     teamMap = {}
     
-    soup = Soup()
+    # New soup instance
+    soup = CreateSoup()
+
+    # perform the HTTP request
+    page = soup.process_request()
     
     # Perform the request to the base page and find the table of team names + links and pull that out
-    table = soup.getData().find('table', id='teams_active')
+    table = page.find('table', id='teams_active')
     tableBody = table.find('tbody')
     tableRowData = tableBody.find_all('tr', class_='full_table')
 
     # get the link to each team page
     for el in tableRowData:
         element = el.find('a')
-        link = f'{soup.getURL()[:len(element) - 8]}{element["href"]}'
+        link = f'{soup.get_url()[:len(element) - 8]}{element["href"]}'
         teamName = element.text
         teamMap[teamName] = link
 
@@ -24,15 +28,17 @@ def get_base_links() -> {}:
 def get_team_page(teamsMap) -> []:
     pagesForTeams = []
     for name, link in teamsMap.items():
-        pagesForTeams.append(Soup(link).getData())
+        page = CreateSoup(link)
+        pageData = page.process_request()
+        pagesForTeams.append(pageData)
     return pagesForTeams
 
 # main method
 def main() -> None:
+
     teams = get_base_links()
     teamPages = get_team_page(teams)
 
-    for teamPage in teamPages:
-        print(teamPage)
+    print(teamPages[0])
 
 main()
