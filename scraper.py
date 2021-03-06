@@ -1,7 +1,7 @@
 from soup import CreateSoup
 import json
 
-# Gets the team names and links to those teams
+# Scrapes each team and saves the team name and a link to their individual pages of stats in a dictionary and returns it
 def get_base_links() -> {}:
     
     teamMap = {}
@@ -26,7 +26,9 @@ def get_base_links() -> {}:
 
     return teamMap
 
-# gets the specific HTML page for every team on basketball-reference with an n-season summary
+# uses the dictionary from the orriginal base url scrape to gather individual html data for every teams stats at that teams main page and returns
+# an array of dictionaries containing that teams name and the html page of that team e.g: {'Atlanta Hawks': 'https://www.basketball-reference.com/teams/ATL/' }
+# and this data is used to loop over and process all seasons and links to those individual season stats to get more comprehensive data
 def get_team_page(teamsMap) -> []:
     
     pagesForTeams = []
@@ -42,6 +44,13 @@ def get_team_page(teamsMap) -> []:
     
     return pagesForTeams, page
 
+# for every processed team in the list from the above function, we want to get every single season they have existed and a link to that teams season
+# stats and populate a dictionary of teams which maps to an array of ALL seasons in their history of the links for that teams season for every season ever
+# e.g {'Atlanta Hawks' : [{'date' : '1995-1996', 'link': 'https://www.basketball-reference.com/teams/ATL/1996.html'}, {and so on for the other season date and link}]}
+# we will then use this array to traverse over every team and get specific statistical data we would find useful for our API like the teams logo, their record, coach, points/game, etc.
+# each page with these stats also has the roster during that season of players available as well. So when we run a scrape on the players for a particular season for a team
+# we will need some way of relating a player to that team in the database somehow so we can always easily get individual player stats and the team they played for, etc. in their career
+# when using player stat views in a frontend project
 def process_team_page(teams, soupedPage) -> {}:
 
     teamSeasons = {}
