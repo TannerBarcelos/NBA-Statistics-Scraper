@@ -30,6 +30,7 @@ def get_base_links() -> {}:
 def get_team_page(teamsMap) -> []:
     
     pagesForTeams = []
+    page = None
     
     for name, link in teamsMap.items():
         page = CreateSoup(link)
@@ -39,9 +40,9 @@ def get_team_page(teamsMap) -> []:
             'pageData': pageData
         })
     
-    return pagesForTeams
+    return pagesForTeams, page
 
-def process_team_page(teams) -> {}:
+def process_team_page(teams, soupedPage) -> {}:
 
     teamSeasons = {}
 
@@ -61,14 +62,15 @@ def process_team_page(teams) -> {}:
         for seasons in allTimeSeasonTable:
             seasonAnchor = seasons.select('th > a')[0]
             seasonDate = seasonAnchor.text
-            seasonStatsLink = f'https://www.basketball-reference.com{seasonAnchor["href"]}'
+            seasonStatsLink = f'{soupedPage.get_url()[:len(seasonAnchor) - 12]}{seasonAnchor["href"]}'
             teamSeasons[teamName].append({'date': seasonDate, 'link': seasonStatsLink})
 
     return teamSeasons
 
 # main method
 def main() -> None:
-    teams = get_base_links()
-    teamPages = get_team_page(teams)
-    teamSeasonDictionary = process_team_page(teamPages)
+    scrapedTeamsAndBaseLinks = get_base_links()
+    individualTeamPages, soupedPage = get_team_page(scrapedTeamsAndBaseLinks)
+    teamSeasons = process_team_page(individualTeamPages, soupedPage)
+    print(teamSeasons)
 main()
