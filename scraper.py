@@ -81,5 +81,9 @@ def main() -> None:
     scrapedTeamsAndBaseLinks = get_base_links()
     individualTeamPages, soupedPage = get_team_page(scrapedTeamsAndBaseLinks)
     teamSeasons = process_team_page(individualTeamPages, soupedPage)
-    print(teamSeasons)
+
+    # for now, write the data above to json
+    with open('teamdata.json', 'w') as f:
+        json.dump(teamSeasons, f, indent=4)
+
 main()
