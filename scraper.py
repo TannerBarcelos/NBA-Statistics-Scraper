@@ -83,7 +83,7 @@ def main() -> None:
     teamSeasons = process_team_page(individualTeamPages, soupedPage)
 
     # for now, write the data above to json
-    with open('teamdata.json', 'w') as f:
+    with open('teamSeasonDump.json', 'w') as f:
         json.dump(teamSeasons, f, indent=4)
 
 main()
