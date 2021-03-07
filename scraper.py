@@ -62,11 +62,31 @@ def process_team_page(teams, soupedPage) -> {}:
 def getTeamInfo(teamSeasons):
     # for every team in the teamSeasons map, we want to go into the array of season stats and perform requests on each
     for team, seasons in teamSeasons.items():
-        for season in seasons:
+        for i, season in enumerate(seasons):
             currentSeason = season['link']
             pageData, soup = getHTML(currentSeason)
-            metaData = pageData.find('div', {"data-template": "Partials/Teams/Summary"}).findAll('p')
-            print(metaData)
+            teamLogo = pageData.find('img', {'class': 'teamlogo'})['src']
+            teamStatistics = pageData.find('div', {"data-template": "Partials/Teams/Summary"}).findAll('p')
+            
+            season['logo'] = teamLogo
+            season['stats'] = {
+                'record': teamStatistics[0].get_text(" ", strip=True)[8:13],
+                'coach' : '',
+                'ppg' : ''
+            }
+
+            # there can be 2+ coaches in a season due to firings. TODO: Handle this edge case
+            if i == 0:
+                season['stats']['coach'] = ' '.join(teamStatistics[3].get_text(" ", strip=True)[7:].split(' ')[:2])
+                season['stats']['ppg'] = float(teamStatistics[5].get_text("", strip=True)[6:].split(' ')[0])
+            else:
+                season['stats']['coach'] = ' '.join(teamStatistics[1].get_text(" ", strip=True)[7:].split(' ')[:2])
+                season['stats']['ppg'] = float(teamStatistics[3].get_text("", strip=True)[6:].split(' ')[0])
+
+            # print(season)
+
+    return teamSeasons
+            
 
 
 # Gets the scraped html for any link passed in
@@ -83,7 +103,7 @@ def main() -> None:
     individualSeasonInfo = getTeamInfo(teamSeasons)
 
     # for now, write the data above to json
-    # with open('teamSeasonDump.json', 'w') as f:
-    #     json.dump(teamSeasons, f, indent=4)
+    with open('teamSeasonDump.json', 'w') as f:
+        json.dump(individualSeasonInfo, f, indent=4)
 
 main()
