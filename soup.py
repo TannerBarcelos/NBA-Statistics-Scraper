@@ -4,7 +4,7 @@ import requests
 class CreateSoup:
     
     # Constructor to take in a URL - defaulted to the root scrape endpoint
-    def __init__(self, baseURL = 'https://www.basketball-reference.com/teams/'):
+    def __init__(self, baseURL):
         self.url = baseURL
 
     # returns the baseURL of the instance of this object

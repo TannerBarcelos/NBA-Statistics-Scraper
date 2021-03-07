@@ -6,11 +6,7 @@ def get_base_links() -> {}:
     
     teamMap = {}
     
-    # New soup instance
-    soup = CreateSoup()
-
-    # perform the HTTP request
-    page = soup.process_request()
+    page, soup = getHTML('https://www.basketball-reference.com/teams/')
     
     # Perform the request to the base page and find the table of team names + links and pull that out
     table = page.find('table', id='teams_active')
@@ -26,31 +22,18 @@ def get_base_links() -> {}:
 
     return teamMap
 
-# uses the dictionary from the orriginal base url scrape to gather individual html data for every teams stats at that teams main page and returns
-# an array of dictionaries containing that teams name and the html page of that team e.g: {'Atlanta Hawks': 'https://www.basketball-reference.com/teams/ATL/' }
-# and this data is used to loop over and process all seasons and links to those individual season stats to get more comprehensive data
 def get_team_page(teamsMap) -> []:
-    
     pagesForTeams = []
-    page = None
-    
+    soup = None
     for name, link in teamsMap.items():
-        page = CreateSoup(link)
-        pageData = page.process_request()
+        page, soup = getHTML(link)
         pagesForTeams.append({
             'name': name,
-            'pageData': pageData
+            'pageData': page
         })
-    
-    return pagesForTeams, page
+    return pagesForTeams, soup
 
-# for every processed team in the list from the above function, we want to get every single season they have existed and a link to that teams season
-# stats and populate a dictionary of teams which maps to an array of ALL seasons in their history of the links for that teams season for every season ever
-# e.g {'Atlanta Hawks' : [{'date' : '1995-1996', 'link': 'https://www.basketball-reference.com/teams/ATL/1996.html'}, {and so on for the other season date and link}]}
-# we will then use this array to traverse over every team and get specific statistical data we would find useful for our API like the teams logo, their record, coach, points/game, etc.
-# each page with these stats also has the roster during that season of players available as well. So when we run a scrape on the players for a particular season for a team
-# we will need some way of relating a player to that team in the database somehow so we can always easily get individual player stats and the team they played for, etc. in their career
-# when using player stat views in a frontend project
+
 def process_team_page(teams, soupedPage) -> {}:
 
     teamSeasons = {}
@@ -76,14 +59,31 @@ def process_team_page(teams, soupedPage) -> {}:
 
     return teamSeasons
 
+def getTeamInfo(teamSeasons):
+    # for every team in the teamSeasons map, we want to go into the array of season stats and perform requests on each
+    for team, seasons in teamSeasons.items():
+        for season in seasons:
+            currentSeason = season['link']
+            pageData, soup = getHTML(currentSeason)
+            metaData = pageData.find('div', {"data-template": "Partials/Teams/Summary"}).findAll('p')
+            print(metaData)
+
+
+# Gets the scraped html for any link passed in
+def getHTML(link):
+    soup = CreateSoup(link)
+    page = soup.process_request()
+    return page, soup
+
 # main method
 def main() -> None:
     scrapedTeamsAndBaseLinks = get_base_links()
     individualTeamPages, soupedPage = get_team_page(scrapedTeamsAndBaseLinks)
     teamSeasons = process_team_page(individualTeamPages, soupedPage)
+    individualSeasonInfo = getTeamInfo(teamSeasons)
 
     # for now, write the data above to json
-    with open('teamSeasonDump.json', 'w') as f:
-        json.dump(teamSeasons, f, indent=4)
+    # with open('teamSeasonDump.json', 'w') as f:
+    #     json.dump(teamSeasons, f, indent=4)
 
 main()
